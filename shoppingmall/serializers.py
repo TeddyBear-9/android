@@ -133,3 +133,25 @@ class UserLikePostsListSeriazlizer(serializers.ModelSerializer):
             all_posts.add(like.post)
         ser_posts = PostListSerializer(instance=all_posts, many=True)
         return ser_posts.data
+
+
+class LoginSerizalizer(serializers.Serializer):
+    error = serializers.CharField(max_length=10, read_only=True, required=False)
+    name = serializers.CharField(max_length=20, required=True)
+    password = serializers.CharField(max_length=20, write_only=True)
+    id = serializers.IntegerField(read_only=True, required=False)
+
+    def validate(self, data):
+        username = data.get("name", None)
+        password = data.get("password", None)
+        if not Users.objects.filter(name=username, password=password).exists():
+
+            raise serializers.ValidationError('用户名或者密码错误', code='authorization')
+        else:
+            data['id'] = Users.objects.get(name=username, password=password).id
+        return data
+
+
+
+
+

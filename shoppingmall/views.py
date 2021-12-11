@@ -1,7 +1,8 @@
 from rest_framework import viewsets, status
+from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, RetrieveAPIView, \
-    UpdateAPIView
+    GenericAPIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from .serializers import *
@@ -53,3 +54,22 @@ class UserLikePostsListViewSet(viewsets.GenericViewSet,
                                     RetrieveAPIView):
     serializer_class = UserLikePostsListSeriazlizer
     queryset = Users.objects.all()
+
+
+class LoginOrRegisterView(CreateAPIView):
+    serializer_class = LoginSerizalizer
+    queryset = Users.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        serializers = self.get_serializer(data=request.data)
+
+        if not serializers.is_valid(raise_exception=True):
+
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        else:
+
+            return Response(data=serializers.data, status=status.HTTP_200_OK)
+
+
+
+

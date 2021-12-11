@@ -16,5 +16,6 @@ urlpatterns = [
     # path('me/login/', views.login, name='login'),
     path(r'malls/', views.MallProduceListView.as_view(), name="malls"),
     path(r'community/recommend/', views.CommunityListView.as_view(), name="community/recommend"),
+    path(r'login/', views.LoginOrRegisterView.as_view(), name='login')
 ]
 urlpatterns += router.urls
