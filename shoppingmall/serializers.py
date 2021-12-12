@@ -135,21 +135,40 @@ class UserLikePostsListSeriazlizer(serializers.ModelSerializer):
         return ser_posts.data
 
 
-class LoginSerizalizer(serializers.Serializer):
+class LoginOrRegisterSerizalizer(serializers.Serializer):
+    type = serializers.CharField(max_length=10, help_text="login表示登录，register表示注册")
     error = serializers.CharField(max_length=10, read_only=True, required=False)
     name = serializers.CharField(max_length=20, required=True)
     password = serializers.CharField(max_length=20, write_only=True)
     id = serializers.IntegerField(read_only=True, required=False)
 
     def validate(self, data):
+        type = data.get("type")
         username = data.get("name", None)
         password = data.get("password", None)
-        if not Users.objects.filter(name=username, password=password).exists():
-
-            raise serializers.ValidationError('用户名或者密码错误', code='authorization')
+        # 登录检测是否存在该用户名，并检查密码是否正确
+        if type == "login":
+            if not Users.objects.filter(name=username).exists():
+                raise serializers.ValidationError("用户名不存在", code='authorization')
+            elif not Users.objects.filter(name=username, password=password).exists():
+                raise serializers.ValidationError('用户名或者密码错误', code='authorization')
+        # 注册检测是否已存在用户，创建新用户
+        elif type == "register":
+            if Users.objects.filter(name=username).exists():
+                raise serializers.ValidationError("用户名已存在，请更换", code='authorization')
+            else:
+                user = Users(name=username, password=password)
+                user.save(force_insert=True)
+        # 处理异常情况
         else:
-            data['id'] = Users.objects.get(name=username, password=password).id
+            raise serializers.ValidationError("访问方式有误", code='authorization')
+
+        # 访问成功则添加用户id字段返回前端
+        data['id'] = Users.objects.get(name=username, password=password).id
         return data
+
+
+
 
 
 

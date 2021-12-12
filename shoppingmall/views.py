@@ -57,17 +57,15 @@ class UserLikePostsListViewSet(viewsets.GenericViewSet,
 
 
 class LoginOrRegisterView(CreateAPIView):
-    serializer_class = LoginSerizalizer
+    serializer_class = LoginOrRegisterSerizalizer
     queryset = Users.objects.all()
 
     def post(self, request, *args, **kwargs):
-        serializers = self.get_serializer(data=request.data)
+        serializers = LoginOrRegisterSerizalizer(data=request.data)
 
         if not serializers.is_valid(raise_exception=True):
-
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         else:
-
             return Response(data=serializers.data, status=status.HTTP_200_OK)
 
 
