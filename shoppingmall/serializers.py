@@ -1,85 +1,141 @@
+
 from django.db.models import Min
 from .models import *
 from rest_framework import serializers
 
 
-class UserDetailSerializer(serializers.ModelSerializer):
-    """用户详细信息序列化器"""
-    class Meta:
-        model = Users
-        fields = ['id', 'name', 'email', 'phone', 'subscribe_num', 'fan_num', 'icon']
-
-
 class UserListSerializer(serializers.ModelSerializer):
     """用户简单信息序列化器"""
+
     class Meta:
         model = Users
         fields = ['id',
                   'name',
                   'icon']
+        read_only_fields = ['name',
+                            'icon']
 
 
-class OrderListSerizalizer(serializers.ModelSerializer):
+class PostListSerializer(serializers.ModelSerializer):
+    """帖子简单信息序列化器"""
+    surface = serializers.SerializerMethodField("get_surface")
+    user = serializers.CharField(source='user.name')
+    user_icon = serializers.ImageField(source='user.icon')
+
+    class Meta:
+        model = Post
+        fields = ['title',
+                  'content',
+                  'user_icon',
+                  'user',
+                  'like_num',
+                  'surface']
+
+    def get_surface(self, obj):
+        pic = PostImages.objects.get(post=obj.id, order_number=1)
+        ser_pic = PostImageSerializer(instance=pic)
+        return ser_pic.data.get("image")
+
+
+class PostLikeListSerializer(serializers.ModelSerializer):
+
+    post = PostListSerializer()
+
+    class Meta:
+        model = PostLike
+        fields = ['post']
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    user_post = PostListSerializer(many=True)
+    """用户详细信息序列化器"""
+
+    class Meta:
+        model = Users
+        fields = ['id',
+                  'name',
+                  # 'email',
+                  # 'phone',
+                  'subscribe_num',
+                  'fan_num',
+                  'icon',
+                  'user_post']
+
+
+class ProduceDetailSerializer(serializers.ModelSerializer):
+    """子商品详情序列化器"""
+    title = serializers.CharField(source='parent_produce.name')
+    surface = serializers.SerializerMethodField('get_surface')
+
+    class Meta:
+        model = Produce
+        fields = ['title',
+                  'child_name',
+                  'price',
+                  'surface']
+
+    def get_surface(self, obj):
+        return ProduceImageSerializer(instance=ProduceImages.objects.get(produce=obj.parent_produce.id,
+                                                                         order_number=1)).data.get('image')
+
+
+class ProduceListSerializer(serializers.ModelSerializer):
+    """子商品简单信息序列化器"""
+
+    class Meta:
+        model = Produce
+        fields = ['child_name',
+                  'price']
+
+
+class OrderListSerializer(serializers.ModelSerializer):
     """订单简单信息序列化器"""
-    produce = serializers.SerializerMethodField("get_produce")
+    produce = ProduceDetailSerializer()
 
     class Meta:
         model = Order
-        fields = ['id', 'quantity', 'status', 'produce']
-
-    def get_produce(self, obj):
-        ser_produce = BaseProduceDetailSerializer(instance=obj.produce)
-        return ser_produce.data
+        fields = ['id',
+                  'quantity',
+                  'status',
+                  'produce']
 
 
 class UsersOrderListSerializer(serializers.ModelSerializer):
     """用户全部订单序列化器"""
-    orders = serializers.SerializerMethodField("get_all_orders")
+    orders = OrderListSerializer(many=True)
 
     class Meta:
         model = Users
         fields = ['orders']
 
-    def get_all_orders(self, obj):
-        orders = Order.objects.filter(user=obj.id)
-        ser_orders = OrderListSerizalizer(instance=orders, many=True)
-        return ser_orders.data
-
 
 class UsersMyPostListSeriazlizer(serializers.ModelSerializer):
     """用户发布的所有帖子序列化器"""
-    posts = serializers.SerializerMethodField("get_my_posts")
+    posts = PostListSerializer(many=True)
 
     class Meta:
         model = Users
         fields = ['posts']
-
-    def get_my_posts(self, obj):
-        posts = Post.objects.filter(user=obj.id)
-        ser_posts = PostListSerializer(instance=posts, many=True)
-        return ser_posts.data
+    #
+    # def get_my_posts(self, obj):
+    #     posts = Post.objects.filter(user=obj.id)
+    #     ser_posts = PostListSerializer(instance=posts, many=True)
+    #     return ser_posts.data
 
 
 class UserLikePostsListSeriazlizer(serializers.ModelSerializer):
     """用户喜欢的所有帖子序列化器"""
-    posts = serializers.SerializerMethodField("get_like_posts")
+    love = PostLikeListSerializer(many=True)
 
     class Meta:
         model = Users
-        fields = ['id', 'posts']
-
-    def get_like_posts(self, obj):
-        likes = PostLike.objects.filter(user=obj).select_related('post')
-        all_posts = set()
-        for like in likes:
-            all_posts.add(like.post)
-        ser_posts = PostListSerializer(instance=all_posts, many=True)
-        return ser_posts.data
+        fields = ['love']
 
 
 class CartItemSerizalier(serializers.ModelSerializer):
-    produce = serializers.SerializerMethodField('get_produce')
+    produce = ProduceDetailSerializer()
     """购物车项序列化器"""
+
     class Meta:
         model = CartItem
         fields = [
@@ -87,20 +143,13 @@ class CartItemSerizalier(serializers.ModelSerializer):
             'quantity'
         ]
 
-    def get_produce(self, obj):
-        return ProduceDetailSerializer(instance=obj.produce).data
-
 
 class UserShoppingCartSerizalizer(serializers.ModelSerializer):
-    items = serializers.SerializerMethodField("get_items")
+    items = CartItemSerizalier(many=True)
 
     class Meta:
         model = Users
         fields = ["items"]
-
-    def get_items(self, obj):
-        items = CartItem.objects.filter(user=obj.id)
-        return CartItemSerizalier(instance=items, many=True).data
 
 
 class LoginOrRegisterSerizalizer(serializers.Serializer):
@@ -139,6 +188,7 @@ class LoginOrRegisterSerizalizer(serializers.Serializer):
 
 class ProduceImageSerializer(serializers.ModelSerializer):
     """商品图片序列化器"""
+
     class Meta:
         model = ProduceImages
         fields = ['order_number', 'image']
@@ -161,36 +211,11 @@ class ProduceCommentSerializer(serializers.ModelSerializer):
         return ser_user.data
 
 
-class ProduceDetailSerializer(serializers.ModelSerializer):
-    """子商品详情序列化器"""
-    produce_name = serializers.SerializerMethodField("get_parent_name")
-
-    class Meta:
-        model = Produce
-        fields = ['produce_name',
-                  'child_name',
-                  'price',
-                  ]
-
-    def get_parent_name(self, obj):
-        parent = Produce.objects.get(id=obj.id).parent_produce
-
-        return parent.name
-
-
-class ProduceListSerializer(serializers.ModelSerializer):
-    """子商品简单信息序列化器"""
-    class Meta:
-        model = Produce
-        fields = ['child_name',
-                  'price']
-
-
 class BaseProduceDetailSerializer(serializers.ModelSerializer):
     """商品详情序列化器"""
-    images = serializers.SerializerMethodField("get_pic_url_list")
-    comments = serializers.SerializerMethodField("get_comment_list")
-    sub_produce = serializers.SerializerMethodField('get_sub_produce')
+    images = ProduceImageSerializer(many=True)
+    comments = ProduceCommentSerializer(many=True)
+    sub_produce = ProduceListSerializer(many=True)
 
     class Meta:
         model = BaseProduce
@@ -200,22 +225,6 @@ class BaseProduceDetailSerializer(serializers.ModelSerializer):
                   'images',
                   'comments',
                   'sub_produce']
-
-    def get_pic_url_list(self, obj):
-        pics = ProduceImages.objects.filter(produce=obj.id)
-        ser_pics = ProduceImageSerializer(instance=pics, many=True)
-        return ser_pics.data
-
-    def get_comment_list(self, obj):
-        comments = ProduceComment.objects.filter(base_produce=obj.id).order_by('star')
-        ser_comments = ProduceCommentSerializer(instance=comments, many=True)
-        return ser_comments.data
-
-    def get_sub_produce(self, obj):
-        subs = Produce.objects.filter(parent_produce=obj.id)
-        ser_subs = ProduceListSerializer(instance=subs, many=True)
-        return ser_subs.data
-
 
 class MallProduceListSerializer(serializers.ModelSerializer):
     """商城首页获取商品最低价格序列化器"""
@@ -228,7 +237,7 @@ class MallProduceListSerializer(serializers.ModelSerializer):
 
 class MallBaseProduceListSerializer(serializers.ModelSerializer):
     """商城首页获取商品最低价格序列化器"""
-    
+
     price = serializers.SerializerMethodField('get_min_price')
     surface = serializers.SerializerMethodField('get_surface')
 
@@ -251,49 +260,30 @@ class MallBaseProduceListSerializer(serializers.ModelSerializer):
 
 class PostImageSerializer(serializers.ModelSerializer):
     """帖子图片序列化器"""
+
     class Meta:
         model = PostImages
         fields = ['order_number', 'image']
 
+
 class PostCommentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField("get_user")
+
     class Meta:
         model = PostComments
         fields = ['user',
                   'content',
-                  'timestamp',]
+                  'timestamp', ]
 
     def get_user(self, obj):
         return UserListSerializer(instance=obj.user).data
 
-class PostListSerializer(serializers.ModelSerializer):
-    """帖子简单信息序列化器"""
-    surface = serializers.SerializerMethodField("get_surface")
-    user = serializers.SerializerMethodField("get_user")
-
-    class Meta:
-        model = Post
-        fields = ['user',
-                  'title',
-                  'like_num',
-                  'content',
-                  'surface']
-
-    def get_surface(self, obj):
-        pic = PostImages.objects.get(post=obj.id, order_number=1)
-        ser_pic = PostImageSerializer(instance=pic)
-        return ser_pic.data.get("image")
-
-    def get_user(self, obj):
-        ser_user = UserListSerializer(instance=obj.user)
-        return ser_user.data
-
 
 class PostDetailSerializer(serializers.ModelSerializer):
     """帖子详情序列化器"""
-    user = serializers.SerializerMethodField("get_user")
-    images = serializers.SerializerMethodField("get_images")
-    comments = serializers.SerializerMethodField("get_comments")
+    user = UserListSerializer()
+    images = PostImageSerializer(many=True, required=True)
+    comments = PostCommentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Post
@@ -304,17 +294,35 @@ class PostDetailSerializer(serializers.ModelSerializer):
                   'images',
                   'comments']
 
-    def get_user(self, obj):
-        ser_user = UserListSerializer(instance=obj.user)
-        return ser_user.data
 
-    def get_images(self, obj):
-        images = PostImages.objects.filter(post=obj.id)
-        return PostImageSerializer(instance=images, many=True).data
+class PostCreateSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField(required=True)
+    post_id = serializers.IntegerField(read_only=True)
+    title = serializers.CharField(max_length=20, write_only=True)
+    content = serializers.CharField(max_length=1000, write_only=True)
+    images = serializers.ListField(child=serializers.ImageField(allow_empty_file=False),
+                                   allow_empty=False,
+                                   max_length=6,
+                                   write_only=True)
 
-    def get_comments(self, obj):
-        comments = PostComments.objects.filter(post=obj.id)
-        return PostCommentSerializer(instance=comments, many=True).data
+    def update(self, instance, validated_data):
+        pass
+
+    def create(self, validated_data):
+        user = Users.objects.get(pk=validated_data.get('user_id'))
+        post = Post.objects.create(user=user,
+                                   title=validated_data.get('title'),
+                                   content=validated_data.get('content'))
+        index = 1
+
+        for image in validated_data.get('images'):
+            print(index)
+            PostImages.objects.create(post=post,
+                                      order_number=index,
+                                      image=image)
+            index += 1
+        return post
+
 
 class CommunitySubscribeListSerializer(serializers.ModelSerializer):
     """社区订阅序列化器"""
@@ -346,4 +354,3 @@ class CategoryProduceListSerializer(serializers.ModelSerializer):
         produces = BaseProduce.objects.filter(category=obj.name, is_active=True)
         ser_produces = MallBaseProduceListSerializer(instance=produces, many=True)
         return ser_produces.data
-

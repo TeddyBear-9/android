@@ -45,7 +45,7 @@ urlpatterns = [
     # path('shoppingmall/', include('shoppingmall.urls')),
     path('admin/', admin.site.urls),
     path('docs/', include_docs_urls(title='API文档')),
-    url(r'^media/(?P<path>.*)', serve, {"document_root": settings.MEDIA_ROOT}),
+    url(r'^media/(?P<path>.*)/$', serve, {"document_root": settings.MEDIA_ROOT}),
     path('', include('shoppingmall.urls')),
     url(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     url(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

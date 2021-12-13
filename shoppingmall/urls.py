@@ -14,13 +14,15 @@ router.register(r'users/myposts', views.UserMyPostsListViewSet)
 router.register(r'users/likeposts', views.UserLikePostsListViewSet)
 router.register(r'users/carts', views.UserCartViewSet)
 
-
 urlpatterns = [
     # re_path(r'^users/(?P<uid>\d+)$', views.UsersViewSet.as_view(actions=)),  # 用户详情视图
     # path('me/login/', views.login, name='login'),
     path(r'malls/', views.MallProduceListView.as_view(), name="malls"),
     path(r'community/recommend/', views.CommunityListView.as_view(), name="community/recommend"),
     path(r'login/', views.LoginOrRegisterView.as_view(), name='login'),
-    path(r'register/', views.LoginOrRegisterView.as_view(), name='register')
+    path(r'register/', views.LoginOrRegisterView.as_view(), name='register'),
+    # path(r'community/posts/', views.PostCreateView.as_view(), name="create_post", namespace='swagger_ignore')
+
 ]
 urlpatterns += router.urls
+

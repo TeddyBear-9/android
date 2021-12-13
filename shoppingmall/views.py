@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.mixins import CreateModelMixin
-from rest_framework.parsers import FileUploadParser
+from rest_framework.parsers import FileUploadParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, RetrieveAPIView, \
     GenericAPIView
@@ -77,6 +77,7 @@ class CommunityListView(ListAPIView):
 
 class CommunitySubscribeListViewSet(viewsets.GenericViewSet,
                                     RetrieveAPIView):
+    parser_classes = [MultiPartParser, ]
     serializer_class = CommunitySubscribeListSerializer
     queryset = Users.objects.all()
 
@@ -85,3 +86,10 @@ class PostViewSet(viewsets.GenericViewSet,
                   RetrieveAPIView):
     queryset = Post.objects.all()
     serializer_class = PostDetailSerializer
+
+
+class PostCreateView(CreateAPIView):
+
+    parser_classes = (MultiPartParser, )
+    serializer_class = PostCreateSerializer
+    queryset = Post.objects.all()

@@ -17,6 +17,7 @@ class Users(models.Model):
     def __str__(self):
         return "username:%s" % self.name
 
+
 class Fans(models.Model):
     user = models.ForeignKey(Users, db_column="user_id", related_name="user", on_delete=models.CASCADE)
     fan = models.ForeignKey(Users, db_column="fan_id", related_name="fan", on_delete=models.CASCADE)
@@ -48,7 +49,7 @@ class BaseProduce(models.Model):
 # 子商品
 class Produce(models.Model):
     child_name = models.CharField(default="", max_length=30)
-    parent_produce = models.ForeignKey(BaseProduce, on_delete=models.CASCADE, related_name="parent")
+    parent_produce = models.ForeignKey(BaseProduce, on_delete=models.CASCADE, related_name="sub_produce")
     price = models.FloatField(null=False)
     order = models.IntegerField(default=1)
 
@@ -57,7 +58,7 @@ class Produce(models.Model):
 
 
 class ProduceImages(models.Model):
-    produce = models.ForeignKey(BaseProduce, on_delete=models.CASCADE)
+    produce = models.ForeignKey(BaseProduce, on_delete=models.CASCADE,related_name="images")
     order_number = models.IntegerField(null=False)
     image = models.ImageField(default=None, upload_to="produce_imgs")
 
@@ -66,8 +67,8 @@ class ProduceImages(models.Model):
 
 
 class Order(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    produce = models.ForeignKey(Produce, on_delete=models.CASCADE, default="", related_name="produce_buy")
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='orders')
+    produce = models.ForeignKey(Produce, on_delete=models.CASCADE, default="", related_name="produce")
     address = models.ForeignKey(Address, on_delete=models.DO_NOTHING)
     quantity = models.IntegerField(default=1)
     status = models.CharField(max_length=10, default=None)  # 商品流通状态：待付款 代发货 待收货 待评价 退款、售后
@@ -79,7 +80,7 @@ class Order(models.Model):
 
 class ProduceComment(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE, primary_key=True)
-    base_produce = models.ForeignKey(BaseProduce, on_delete=models.CASCADE)  # 用于建立索引方便查找商品评论
+    base_produce = models.ForeignKey(BaseProduce, on_delete=models.CASCADE, related_name="comments")  # 用于建立索引方便查找商品评论
     commentTime = models.DateTimeField(auto_now_add=True)
     comment_like_num = models.IntegerField(default=0)
     star = models.IntegerField(validators=[MaxValueValidator(5), MinValueValidator(1)])
@@ -91,7 +92,7 @@ class Advertisement(models.Model):
 
 
 class CartItem(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="items")
     produce = models.ForeignKey(Produce, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
 
@@ -102,7 +103,7 @@ class Favorites(models.Model):
 
 
 class Post(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="posts")
     title = models.CharField(max_length=20, null=False)
     content = models.TextField(null=False)
     like_num = models.IntegerField(default=0)
@@ -115,21 +116,21 @@ class Post(models.Model):
 
 
 class PostImages(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
     order_number = models.IntegerField(null=False)
     image = models.ImageField(default=None, upload_to="post_imgs")
 
 
 class PostComments(models.Model):
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     content = models.TextField(null=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
 class PostLike(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="love")
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
