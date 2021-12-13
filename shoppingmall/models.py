@@ -117,7 +117,7 @@ class Post(models.Model):
 class PostImages(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     order_number = models.IntegerField(null=False)
-    image = models.ImageField(default=None)
+    image = models.ImageField(default=None, upload_to="post_imgs")
 
 
 class PostComments(models.Model):
