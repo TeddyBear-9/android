@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.mixins import CreateModelMixin
+from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, RetrieveAPIView, \
     GenericAPIView
@@ -10,7 +11,7 @@ from .models import *
 
 
 class UsersViewSet(RetrieveUpdateDestroyAPIView,
-                   viewsets.GenericViewSet):
+                   viewsets.GenericViewSet,):
     queryset = Users.objects.all()
     serializer_class = UserSerializer
     # def get_queryset(self):
@@ -59,6 +60,7 @@ class UserLikePostsListViewSet(viewsets.GenericViewSet,
 class LoginOrRegisterView(CreateAPIView):
     serializer_class = LoginOrRegisterSerizalizer
     queryset = Users.objects.all()
+
 
     def post(self, request, *args, **kwargs):
         serializers = LoginOrRegisterSerizalizer(data=request.data)

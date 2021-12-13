@@ -4,7 +4,7 @@ from django.db import models
 
 class Users(models.Model):
     name = models.CharField(max_length=20, null=False, unique=True)
-    icon = models.ImageField(default="")
+    icon = models.ImageField(default="", upload_to="user_icon")
     email = models.EmailField(default="")
     phone = models.CharField(max_length=20, null=True)
     password = models.CharField(max_length=20, null=False, default="123456")

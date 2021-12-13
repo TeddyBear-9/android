@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from django.template.context_processors import media
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -119,7 +121,9 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 
 }
+MEDIA_ROOT = 'media/'
 
+MEDIA_URL = 'media/'
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 

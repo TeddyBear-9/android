@@ -6,7 +6,7 @@ from rest_framework import serializers
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = ['id', 'name', 'email', 'phone', 'subscribe_num', 'fan_num']
+        fields = ['id', 'name', 'email', 'phone', 'subscribe_num', 'fan_num', 'icon']
 
 
 class MallProduceListSerializer(serializers.ModelSerializer):
