@@ -59,7 +59,7 @@ class Produce(models.Model):
 class ProduceImages(models.Model):
     produce = models.ForeignKey(BaseProduce, on_delete=models.CASCADE)
     order_number = models.IntegerField(null=False)
-    image = models.ImageField(default=None)
+    image = models.ImageField(default=None, upload_to="produce_imgs")
 
     class Meta:
         unique_together = [['produce', 'order_number']]
@@ -117,7 +117,7 @@ class Post(models.Model):
 class PostImages(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     order_number = models.IntegerField(null=False)
-    images = models.ImageField(default=None)
+    image = models.ImageField(default=None)
 
 
 class PostComments(models.Model):
