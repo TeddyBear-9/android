@@ -1,4 +1,3 @@
-
 from django.db.models import Min
 from .models import *
 from rest_framework import serializers
@@ -14,6 +13,16 @@ class UserListSerializer(serializers.ModelSerializer):
                   'icon']
         read_only_fields = ['name',
                             'icon']
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = [
+            'id',
+            'address_inf',
+            'phone'
+        ]
 
 
 class PostListSerializer(serializers.ModelSerializer):
@@ -38,7 +47,6 @@ class PostListSerializer(serializers.ModelSerializer):
 
 
 class PostLikeListSerializer(serializers.ModelSerializer):
-
     post = PostListSerializer()
 
     class Meta:
@@ -98,6 +106,45 @@ class OrderListSerializer(serializers.ModelSerializer):
                   'quantity',
                   'status',
                   'produce']
+
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    # 用于反序列化
+    produce_id = serializers.IntegerField(write_only=True, required=True)
+    address_id = serializers.IntegerField(write_only=True, required=True)
+
+    produce = ProduceDetailSerializer(read_only=True)
+    address = AddressSerializer(read_only=True, )
+
+    class Meta:
+        model = Order
+        fields = ['id',
+                  'produce',
+                  'address',
+                  'quantity',
+                  'status',
+                  'paymentTime',
+                  'produce_id',
+                  'address_id']
+        read_only_fields = [
+            'produce',
+            'address',
+            'status',
+            'paymentTime'
+        ]
+        extra_kwargs = {'quantity': {'required': True}}
+
+    def create(self, validated_data):
+        address = Address.objects.get(id=validated_data.get('address_id'))
+        user = address.user
+        produce = Produce.objects.get(id=validated_data.get("produce_id"))
+
+        instance = Order.objects.create(user=user,
+                                        produce=produce,
+                                        address=address,
+                                        quantity=validated_data.get('quantity'),
+                                        status="未发货")
+        return instance
 
 
 class UsersOrderListSerializer(serializers.ModelSerializer):
@@ -226,6 +273,7 @@ class BaseProduceDetailSerializer(serializers.ModelSerializer):
                   'comments',
                   'sub_produce']
 
+
 class MallProduceListSerializer(serializers.ModelSerializer):
     """商城首页获取商品最低价格序列化器"""
     min_price = serializers.FloatField(required=True)
@@ -322,6 +370,7 @@ class PostCreateSerializer(serializers.Serializer):
                                       image=image)
             index += 1
         return post
+
 
 class CommunitySubscribeListSerializer(serializers.ModelSerializer):
     """社区订阅序列化器"""

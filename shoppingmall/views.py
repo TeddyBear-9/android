@@ -3,7 +3,7 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.parsers import FileUploadParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, RetrieveAPIView, \
-    GenericAPIView,DestroyAPIView
+    GenericAPIView, DestroyAPIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from .serializers import *
@@ -63,9 +63,6 @@ class MallCategoryProduceListViewSet(viewsets.GenericViewSet,
     serializer_class = CategoryProduceListSerializer
     queryset = Category.objects.all()
 
-    def destroy(self, request, pk=None):
-        pass
-
 
 class BaseProduceDetailViewSet(viewsets.GenericViewSet,
                                RetrieveAPIView):
@@ -97,3 +94,10 @@ class PostCreateView(CreateAPIView
     parser_classes = (MultiPartParser, )
     serializer_class = PostCreateSerializer
     queryset = Post.objects.all()
+
+
+class OrderDetailViewSet(viewsets.GenericViewSet,
+                         RetrieveAPIView,
+                         CreateAPIView):
+    serializer_class = OrderDetailSerializer
+    queryset = Order.objects.all()
