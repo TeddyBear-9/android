@@ -101,3 +101,9 @@ class OrderDetailViewSet(viewsets.GenericViewSet,
                          CreateAPIView):
     serializer_class = OrderDetailSerializer
     queryset = Order.objects.all()
+
+
+class UserDefaultAddressViewSet(viewsets.GenericViewSet,
+                                RetrieveAPIView):
+    serializer_class = UserDefaultAddressSerializer
+    queryset = Users.objects.all()

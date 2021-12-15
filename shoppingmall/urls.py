@@ -4,16 +4,17 @@ from rest_framework.routers import DefaultRouter
 
 # 定义视图处理的路由器
 router = DefaultRouter()
-router.register(r'users', views.UsersViewSet)
-router.register(r'community/subscribe', views.CommunitySubscribeListViewSet)
-router.register(r'community/posts', views.PostViewSet)
-router.register(r'malls/category', views.MallCategoryProduceListViewSet)
+router.register(r'users/', views.UsersViewSet)
+router.register(r'community/subscribe/', views.CommunitySubscribeListViewSet)
+router.register(r'community/posts/', views.PostViewSet)
+router.register(r'malls/category/', views.MallCategoryProduceListViewSet)
 router.register(r"malls/produces/", views.BaseProduceDetailViewSet)
 router.register(r'malls/orders/', views.OrderDetailViewSet)
-router.register(r'users/orders', views.UserOrdersListViewSet)
-router.register(r'users/myposts', views.UserMyPostsListViewSet)
-router.register(r'users/likeposts', views.UserLikePostsListViewSet)
-router.register(r'users/carts', views.UserCartViewSet)
+router.register(r'users/orders/', views.UserOrdersListViewSet)
+router.register(r'users/myposts/', views.UserMyPostsListViewSet)
+router.register(r'users/likeposts/', views.UserLikePostsListViewSet)
+router.register(r'users/carts/', views.UserCartViewSet)
+router.register(r'users/address/', views.UserDefaultAddressViewSet)
 
 urlpatterns = [
     # re_path(r'^users/(?P<uid>\d+)$', views.UsersViewSet.as_view(actions=)),  # 用户详情视图

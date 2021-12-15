@@ -28,7 +28,7 @@ class Fans(models.Model):
 
 
 class Address(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="address")
     address_inf = models.CharField(max_length=50)
     phone = models.CharField(max_length=20, default=None)
     is_default = models.BooleanField(default=False)
@@ -58,7 +58,7 @@ class Produce(models.Model):
 
 
 class ProduceImages(models.Model):
-    produce = models.ForeignKey(BaseProduce, on_delete=models.CASCADE,related_name="images")
+    produce = models.ForeignKey(BaseProduce, on_delete=models.CASCADE, related_name="images")
     order_number = models.IntegerField(null=False)
     image = models.ImageField(default=None, upload_to="produce_imgs")
 

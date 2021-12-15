@@ -21,7 +21,8 @@ class AddressSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'address_inf',
-            'phone'
+            'phone',
+            'is_default',
         ]
 
 
@@ -177,6 +178,22 @@ class UserLikePostsListSeriazlizer(serializers.ModelSerializer):
     class Meta:
         model = Users
         fields = ['love']
+
+
+class UserDefaultAddressSerializer(serializers.ModelSerializer):
+    address = serializers.SerializerMethodField('get_default_address')
+
+    class Meta:
+        model = Users
+        fields = [
+            'address'
+        ]
+
+    def get_default_address(self, obj):
+        default_address = Address.objects.filter(user=obj, is_default=True)
+
+        ser_address = AddressSerializer(instance=default_address, many=True)
+        return ser_address.data
 
 
 class CartItemSerizalier(serializers.ModelSerializer):
