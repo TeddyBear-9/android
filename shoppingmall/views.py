@@ -1,9 +1,9 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.parsers import FileUploadParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, RetrieveAPIView, \
-    GenericAPIView
+    GenericAPIView,DestroyAPIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from .serializers import *
@@ -59,9 +59,12 @@ class MallProduceListView(ListAPIView):
 
 
 class MallCategoryProduceListViewSet(viewsets.GenericViewSet,
-                                     RetrieveAPIView):
+                                     RetrieveAPIView,):
     serializer_class = CategoryProduceListSerializer
     queryset = Category.objects.all()
+
+    def destroy(self, request, pk=None):
+        pass
 
 
 class BaseProduceDetailViewSet(viewsets.GenericViewSet,
@@ -83,12 +86,13 @@ class CommunitySubscribeListViewSet(viewsets.GenericViewSet,
 
 
 class PostViewSet(viewsets.GenericViewSet,
-                  RetrieveAPIView):
-    queryset = Post.objects.all()
+                  RetrieveAPIView, DestroyAPIView):
+    queryset = Post.objects.filter(is_active=True)
     serializer_class = PostDetailSerializer
 
 
-class PostCreateView(CreateAPIView):
+class PostCreateView(CreateAPIView
+                     ):
 
     parser_classes = (MultiPartParser, )
     serializer_class = PostCreateSerializer

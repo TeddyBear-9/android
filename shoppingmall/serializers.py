@@ -323,7 +323,6 @@ class PostCreateSerializer(serializers.Serializer):
             index += 1
         return post
 
-
 class CommunitySubscribeListSerializer(serializers.ModelSerializer):
     """社区订阅序列化器"""
     subscribe_posts = serializers.SerializerMethodField("get_subscribe_posts")
