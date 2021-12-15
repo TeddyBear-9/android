@@ -111,11 +111,11 @@ class OrderListSerializer(serializers.ModelSerializer):
 
 class OrderDetailSerializer(serializers.ModelSerializer):
     # 用于反序列化
-    produce_id = serializers.IntegerField(write_only=True, required=True)
-    address_id = serializers.IntegerField(write_only=True, required=True)
+    produce_id = serializers.IntegerField(write_only=True, required=False)
+    address_id = serializers.IntegerField(write_only=True, required=False)
 
     produce = ProduceDetailSerializer(read_only=True)
-    address = AddressSerializer(read_only=True, )
+    address = AddressSerializer(read_only=True)
 
     class Meta:
         model = Order
@@ -130,12 +130,18 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'produce',
             'address',
-            'status',
             'paymentTime'
         ]
-        extra_kwargs = {'quantity': {'required': True}}
 
     def create(self, validated_data):
+        # 异常处理
+        if validated_data.get('address_id') is None:
+            raise serializers.ValidationError("地址不可以为空")
+        if validated_data.get('produce_id') is None:
+            raise serializers.ValidationError("购买产品不可以为空")
+        if validated_data.get('quantity') is None:
+            raise serializers.ValidationError("购买数量不可以为空")
+
         address = Address.objects.get(id=validated_data.get('address_id'))
         user = address.user
         produce = Produce.objects.get(id=validated_data.get("produce_id"))
@@ -143,8 +149,13 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         instance = Order.objects.create(user=user,
                                         produce=produce,
                                         address=address,
-                                        quantity=validated_data.get('quantity'),
-                                        status="未发货")
+                                        quantity=validated_data.get('quantity'))
+        return instance
+
+    def update(self, instance, validated_data):
+        # 异常处理 且只允许更新状态
+        if validated_data.get('status') is not None:
+            instance.status = validated_data.get('status')
         return instance
 
 
@@ -275,6 +286,39 @@ class ProduceCommentSerializer(serializers.ModelSerializer):
         return ser_user.data
 
 
+class CommentCreateSerializer(serializers.Serializer):
+    order_id = serializers.IntegerField()
+    content = serializers.CharField()
+    star = serializers.FloatField()
+
+    def update(self, instance, validated_data):
+        pass
+
+    def create(self, validated_data):
+        order = Order.objects.get(pk=validated_data.get('order_id'))
+        produce = order.produce.parent_produce
+        instance = ProduceComment.objects.create(order=order,
+                                                 base_produce=produce,
+                                                 content=validated_data.get('content'),
+                                                 star=validated_data.get('star'))
+
+        return instance
+
+    def validate_order_id(self, value):
+        if not Order.objects.filter(id=value).exists():
+            raise serializers.ValidationError("订单不存在", code='authorization')
+        if ProduceComment.objects.filter(order_id=value).exists():
+            raise serializers.ValidationError("该订单已有评论", code='authorization')
+        if Order.objects.get(pk=value).status != '已收货':
+            raise serializers.ValidationError("订单状态暂时不可评价", code='authorization')
+        return value
+
+    def validate_star(self, value):
+        if value % 0.5 != 0:
+            raise serializers.ValidationError("评分分数格式有误", code="authorization")
+        return value
+
+
 class BaseProduceDetailSerializer(serializers.ModelSerializer):
     """商品详情序列化器"""
     images = ProduceImageSerializer(many=True)
@@ -332,17 +376,42 @@ class PostImageSerializer(serializers.ModelSerializer):
 
 
 class PostCommentSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField("get_user")
+    user = UserListSerializer(required=False)
+    post_id = serializers.IntegerField(write_only=True)
+    user_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = PostComments
         fields = ['user',
                   'content',
-                  'timestamp', ]
+                  'timestamp',
+                  'post_id',
+                  'user_id']
+        read_only_fields = [
+            'timestamp'
+        ]
+        extra_kwargs = {'content': {'required': True}}
 
-    def get_user(self, obj):
-        return UserListSerializer(instance=obj.user).data
+    def create(self, validated_data):
+        user_id = validated_data.get('user_id')
+        post_id = validated_data.get('post_id')
+        content = validated_data.get('content')
+        if post_id is None:
+            raise serializers.ValidationError("帖子ID不可为空")
+        if user_id is None:
+            raise serializers.ValidationError("用户ID不可为空")
+        if content is None:
+            raise serializers.ValidationError("评论内容不可为空")
 
+        if not Users.objects.filter(id=user_id).exists():
+            raise serializers.ValidationError("该用户不存在")
+        if not Post.objects.filter(id=post_id).exists():
+            raise serializers.ValidationError("该帖子不存在")
+
+        instance = PostComments.objects.create(user=Users.objects.get(pk=user_id),
+                                               post=Post.objects.get(pk=post_id),
+                                               content=content)
+        return instance
 
 class PostDetailSerializer(serializers.ModelSerializer):
     """帖子详情序列化器"""

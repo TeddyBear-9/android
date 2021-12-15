@@ -71,7 +71,7 @@ class Order(models.Model):
     produce = models.ForeignKey(Produce, on_delete=models.CASCADE, default="", related_name="produce")
     address = models.ForeignKey(Address, on_delete=models.DO_NOTHING)
     quantity = models.IntegerField(default=1)
-    status = models.CharField(max_length=10, default=None)  # 商品流通状态：待付款 代发货 待收货 待评价 退款、售后
+    status = models.CharField(max_length=10, default="未发货")  # 商品流通状态：未发货 待收货 已收货
     paymentTime = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -81,6 +81,7 @@ class Order(models.Model):
 class ProduceComment(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE, primary_key=True)
     base_produce = models.ForeignKey(BaseProduce, on_delete=models.CASCADE, related_name="comments")  # 用于建立索引方便查找商品评论
+    content = models.CharField(max_length=500, default="")
     commentTime = models.DateTimeField(auto_now_add=True)
     comment_like_num = models.IntegerField(default=0)
     star = models.IntegerField(validators=[MaxValueValidator(5), MinValueValidator(1)])

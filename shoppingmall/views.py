@@ -3,7 +3,7 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.parsers import FileUploadParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, RetrieveAPIView, \
-    GenericAPIView, DestroyAPIView
+    GenericAPIView, DestroyAPIView, UpdateAPIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from .serializers import *
@@ -88,8 +88,7 @@ class PostViewSet(viewsets.GenericViewSet,
     serializer_class = PostDetailSerializer
 
 
-class PostCreateView(CreateAPIView
-                     ):
+class PostCreateView(CreateAPIView):
 
     parser_classes = (MultiPartParser, )
     serializer_class = PostCreateSerializer
@@ -98,12 +97,23 @@ class PostCreateView(CreateAPIView
 
 class OrderDetailViewSet(viewsets.GenericViewSet,
                          RetrieveAPIView,
-                         CreateAPIView):
+                         CreateAPIView,
+                         UpdateAPIView):
     serializer_class = OrderDetailSerializer
     queryset = Order.objects.all()
 
 
 class UserDefaultAddressViewSet(viewsets.GenericViewSet,
-                                RetrieveAPIView):
+                                RetrieveAPIView,):
     serializer_class = UserDefaultAddressSerializer
     queryset = Users.objects.all()
+
+
+class ProduceCommentsCreateView(CreateAPIView):
+    serializer_class = CommentCreateSerializer
+    queryset = ProduceComment.objects.all()
+
+
+class PostCommentsCreateView(CreateAPIView):
+    serializer_class = PostCommentSerializer
+    queryset = PostComments.objects.all()
