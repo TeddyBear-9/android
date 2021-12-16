@@ -117,3 +117,8 @@ class ProduceCommentsCreateView(CreateAPIView):
 class PostCommentsCreateView(CreateAPIView):
     serializer_class = PostCommentSerializer
     queryset = PostComments.objects.all()
+
+
+class PostLikeCreateView(CreateAPIView):
+    serializer_class = PostLikeCreateSerializer
+    queryset = PostLike.objects.all()

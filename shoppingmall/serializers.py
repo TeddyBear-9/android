@@ -175,11 +175,6 @@ class UsersMyPostListSeriazlizer(serializers.ModelSerializer):
     class Meta:
         model = Users
         fields = ['posts']
-    #
-    # def get_my_posts(self, obj):
-    #     posts = Post.objects.filter(user=obj.id)
-    #     ser_posts = PostListSerializer(instance=posts, many=True)
-    #     return ser_posts.data
 
 
 class UserLikePostsListSeriazlizer(serializers.ModelSerializer):
@@ -207,7 +202,7 @@ class UserDefaultAddressSerializer(serializers.ModelSerializer):
         return ser_address.data
 
 
-class CartItemSerizalier(serializers.ModelSerializer):
+class CartItemSerializer(serializers.ModelSerializer):
     produce = ProduceDetailSerializer()
     """购物车项序列化器"""
 
@@ -220,7 +215,7 @@ class CartItemSerizalier(serializers.ModelSerializer):
 
 
 class UserShoppingCartSerizalizer(serializers.ModelSerializer):
-    items = CartItemSerizalier(many=True)
+    items = CartItemSerializer(many=True)
 
     class Meta:
         model = Users
@@ -413,6 +408,7 @@ class PostCommentSerializer(serializers.ModelSerializer):
                                                content=content)
         return instance
 
+
 class PostDetailSerializer(serializers.ModelSerializer):
     """帖子详情序列化器"""
     user = UserListSerializer()
@@ -456,6 +452,27 @@ class PostCreateSerializer(serializers.Serializer):
                                       image=image)
             index += 1
         return post
+
+
+class PostLikeCreateSerializer(serializers.Serializer):
+    post_id = serializers.IntegerField(write_only=True)
+    user_id = serializers.IntegerField(write_only=True)
+    id = serializers.IntegerField(read_only=True)
+
+    def create(self, validated_data):
+        post = Post.objects.get(id=validated_data.get("post_id"))
+
+        user = Users.objects.get(id=validated_data.get('user_id'))
+        if post is None:
+            raise serializers.ValidationError("帖子不存在")
+        if user is None:
+            raise serializers.ValidationError("用户不存在")
+        instance = PostLike.objects.create(post=post,
+                                           user=user)
+        return instance
+
+    def update(self, instance, validated_data):
+        pass
 
 
 class CommunitySubscribeListSerializer(serializers.ModelSerializer):

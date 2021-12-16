@@ -22,6 +22,7 @@ urlpatterns = [
     path(r'malls/', views.MallProduceListView.as_view(), name="malls"),
     path(r'community/recommend/', views.CommunityListView.as_view(), name="community/recommend"),
     path(r'community/posts/comments/', views.PostCommentsCreateView.as_view(), name="user-comment-post"),
+    path(r'community/posts/like',views.PostLikeCreateView.as_view(), name='like-post'),
     path(r'login/', views.LoginOrRegisterView.as_view(), name='login'),
     path(r'register/', views.LoginOrRegisterView.as_view(), name='register'),
     path(r'malls/produces/comments/', views.ProduceCommentsCreateView.as_view(), name="user-comment-produce"),
