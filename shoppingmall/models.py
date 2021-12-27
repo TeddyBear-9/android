@@ -17,6 +17,7 @@ class Users(models.Model):
     def __str__(self):
         return "username:%s" % self.name
 
+
 class Fans(models.Model):
     user = models.ForeignKey(Users, db_column="user_id", related_name="user", on_delete=models.CASCADE)
     fan = models.ForeignKey(Users, db_column="fan_id", related_name="fan", on_delete=models.CASCADE)

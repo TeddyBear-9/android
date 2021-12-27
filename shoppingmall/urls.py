@@ -10,11 +10,14 @@ router.register(r'malls/category', views.MallCategoryProduceListViewSet)
 router.register(r'users/orders', views.UserOrdersListViewSet)
 router.register(r'users/myposts', views.UserMyPostsListViewSet)
 router.register(r'users/likeposts', views.UserLikePostsListViewSet)
+router.register(r'posts', views.PostDetailViewSet)
 
 urlpatterns = [
     # re_path(r'^users/(?P<uid>\d+)$', views.UsersViewSet.as_view(actions=)),  # 用户详情视图
     # path('me/login/', views.login, name='login'),
     path(r'malls/', views.MallProduceListView.as_view(), name="malls"),
     path(r'community/recommend/', views.CommunityListView.as_view(), name="community/recommend"),
+    url(r'^ws/chat/$', consumers.ChatConsumer),
+
 ]
 urlpatterns += router.urls

@@ -133,3 +133,9 @@ class UserLikePostsListSeriazlizer(serializers.ModelSerializer):
             all_posts.add(like.post)
         ser_posts = PostListSerializer(instance=all_posts, many=True)
         return ser_posts.data
+
+
+class PostDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = '__all__'

@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView, RetrieveAPIView, \
     UpdateAPIView
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
 from .serializers import *
 from .models import *
@@ -53,3 +53,16 @@ class UserLikePostsListViewSet(viewsets.GenericViewSet,
                                     RetrieveAPIView):
     serializer_class = UserLikePostsListSeriazlizer
     queryset = Users.objects.all()
+
+
+class PostDetailViewSet(ModelViewSet):
+    serializer_class = PostDetailSerializer
+    queryset = Post.objects.all()
+
+    def get_queryset(self):
+        post_id = self.request.query_params.get('id', None)
+        queryset = Post.objects.all()
+        if post_id is not None:
+            return queryset.filter(id=post_id)
+        else:
+            return queryset
