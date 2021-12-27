@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from django.template.context_processors import media
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -117,9 +119,18 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'PAGE_SIZE': 10,
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+        'rest_framework.parsers.FileUploadParser',
+    ],
 
 }
 
+MEDIA_ROOT = 'media/'
+
+MEDIA_URL = 'media/'
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -143,6 +154,7 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 
 CELERY_BROKER_URL = os.environ['REDIS_URL']
