@@ -127,6 +127,7 @@ REST_FRAMEWORK = {
     ],
 
 }
+
 MEDIA_ROOT = 'media/'
 
 MEDIA_URL = 'media/'
@@ -154,8 +155,3 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# swagger 忽略接口
-SWAGGER_SETTINGS = {
-    "exclude_namespaces": ["swagger_ignore"],    #  List URL namespaces to ignore
-}

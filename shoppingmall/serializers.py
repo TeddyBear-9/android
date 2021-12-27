@@ -56,19 +56,31 @@ class PostLikeListSerializer(serializers.ModelSerializer):
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
-    user_post = PostListSerializer(many=True)
+    posts = PostListSerializer(many=True, required=False)
     """用户详细信息序列化器"""
 
     class Meta:
         model = Users
         fields = ['id',
                   'name',
-                  # 'email',
-                  # 'phone',
+                  'email',
+                  'phone',
                   'subscribe_num',
                   'fan_num',
                   'icon',
-                  'user_post']
+                  'posts']
+        read_only_fields = [
+            'id',
+            'subscribe_num',
+            'fan_num',
+            'icon',
+            'posts'
+        ]
+        extra_kwargs = {
+            "posts": {
+                "required": False
+            }
+        }
 
 
 class ProduceDetailSerializer(serializers.ModelSerializer):
@@ -156,6 +168,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         # 异常处理 且只允许更新状态
         if validated_data.get('status') is not None:
             instance.status = validated_data.get('status')
+            instance.save()
         return instance
 
 
@@ -282,9 +295,10 @@ class ProduceCommentSerializer(serializers.ModelSerializer):
 
 
 class CommentCreateSerializer(serializers.Serializer):
-    order_id = serializers.IntegerField()
-    content = serializers.CharField()
-    star = serializers.FloatField()
+    id = serializers.IntegerField(read_only=True)
+    order_id = serializers.IntegerField(write_only=True)
+    content = serializers.CharField(write_only=True)
+    star = serializers.FloatField(write_only=True)
 
     def update(self, instance, validated_data):
         pass
@@ -458,6 +472,7 @@ class PostLikeCreateSerializer(serializers.Serializer):
     post_id = serializers.IntegerField(write_only=True)
     user_id = serializers.IntegerField(write_only=True)
     id = serializers.IntegerField(read_only=True)
+    timestamp = serializers.DateTimeField(read_only=True)
 
     def create(self, validated_data):
         post = Post.objects.get(id=validated_data.get("post_id"))
